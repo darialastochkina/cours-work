@@ -1,0 +1,11 @@
+2025-04-09 06:26:02,919 - src.utils - ERROR - Error loading transactions: Missing optional dependency 'openpyxl'.  Use pip or conda to install openpyxl.
+2025-04-09 06:26:02,920 - src.views - INFO - Generating main page data for 2023-01-01 12:00:00
+2025-04-09 06:26:04,538 - src.utils - ERROR - Error getting currency rates: HTTPSConnectionPool(host='api.example.com', port=443): Max retries exceeded with url: /currency?api_key=demo (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x120ccb6d0>: Failed to resolve 'api.example.com' ([Errno 8] nodename nor servname provided, or not known)"))
+2025-04-09 06:26:04,543 - src.utils - ERROR - Error getting stock prices: HTTPSConnectionPool(host='api.example.com', port=443): Max retries exceeded with url: /stocks?api_key=demo (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x120e122b0>: Failed to resolve 'api.example.com' ([Errno 8] nodename nor servname provided, or not known)"))
+2025-04-09 06:26:04,543 - src.views - INFO - Main page data generated successfully
+2025-04-09 06:26:04,890 - src.utils - ERROR - Error loading transactions: Missing optional dependency 'openpyxl'.  Use pip or conda to install openpyxl.
+2025-04-09 06:26:04,890 - src.services - INFO - Analyzing cashback categories for 2023-1
+2025-04-09 06:26:04,890 - src.services - INFO - Cashback categories analysis completed successfully
+2025-04-09 06:26:05,198 - src.utils - ERROR - Error loading transactions: Missing optional dependency 'openpyxl'.  Use pip or conda to install openpyxl.
+2025-04-09 06:26:05,198 - src.reports - INFO - Generating spending by category report for Супермаркеты
+2025-04-09 06:26:05,198 - src.reports - ERROR - Error generating spending by category report: 'Дата операции'
