@@ -1,19 +1,20 @@
-import pytest
-from unittest.mock import patch, mock_open, MagicMock
-import pandas as pd
 import unittest
+from unittest.mock import MagicMock, mock_open, patch
+
+import pandas as pd
+import pytest
 
 from src.utils import (
+    format_date,
+    get_card_info,
+    get_currency_rates,
+    get_expenses_data,
+    get_greeting,
+    get_income_data,
+    get_stock_prices,
+    get_top_transactions,
     load_transactions,
     load_user_settings,
-    get_currency_rates,
-    get_stock_prices,
-    format_date,
-    get_greeting,
-    get_card_info,
-    get_top_transactions,
-    get_expenses_data,
-    get_income_data
 )
 
 
@@ -120,6 +121,22 @@ def test_format_date():
 class TestUtilsWithUnittest(unittest.TestCase):
     """Тесты для вспомогательных функций с использованием unittest."""
 
+    def test_get_greeting_parametrized(self):
+        """Параметризованный тест функции get_greeting."""
+        test_cases = [
+            ("2023-01-01 08:00:00", "Доброе утро"),
+            ("2023-01-01 14:00:00", "Добрый день"),
+            ("2023-01-01 20:00:00", "Добрый вечер"),
+            ("2023-01-01 02:00:00", "Доброй ночи"),
+            ("2023-01-01 06:00:00", "Доброе утро"),
+            ("2023-01-01 12:00:00", "Добрый день"),
+            ("2023-01-01 18:00:00", "Добрый вечер"),
+            ("2023-01-01 23:59:59", "Доброй ночи"),
+        ]
+        for datetime_str, expected_greeting in test_cases:
+            with self.subTest(datetime_str=datetime_str):
+                self.assertEqual(get_greeting(datetime_str), expected_greeting)
+
     def test_get_greeting(self):
         """Тест функции get_greeting."""
         self.assertEqual(get_greeting("2023-01-01 08:00:00"), "Доброе утро")
@@ -222,3 +239,9 @@ def test_load_transactions_real_file(mock_read_excel):
     assert 'Дата операции' in df.columns
     assert 'Сумма платежа' in df.columns
     assert 'Категория' in df.columns
+
+
+@pytest.fixture
+def real_transactions():
+    """Фикстура с реальными данными транзакций из файла."""
+    return pd.read_excel('data/Operations (1).xlsx')

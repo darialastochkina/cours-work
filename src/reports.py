@@ -6,6 +6,8 @@ from typing import Optional
 
 import pandas as pd
 
+from src.decorators import log_execution
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -14,6 +16,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+@log_execution
 def spending_by_category(transactions: pd.DataFrame, category: str, date: Optional[str] = None) -> pd.DataFrame:
     """
     Возвращает траты по заданной категории за последние три месяца.

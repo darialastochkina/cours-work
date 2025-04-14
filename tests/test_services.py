@@ -1,13 +1,15 @@
-import pytest
 import json
 import unittest
+from datetime import datetime
+
+import pytest
 
 from src.services import (
     cashback_categories,
     investment_bank,
-    simple_search,
+    search_person_transfers,
     search_phone_numbers,
-    search_person_transfers
+    simple_search,
 )
 
 
@@ -154,16 +156,45 @@ def sample_transactions():
     ]
 
 
-def test_cashback_categories(sample_transactions):
-    """Тест функции анализа выгодных категорий для кешбэка."""
-    result = cashback_categories(sample_transactions, 2023, 1)
+@pytest.mark.parametrize("search_term,expected_count,expected_item", [
+    ("Пятерочка", 1, "Пятерочка"),
+    ("продукты", 2, "Супермаркеты"),
+    ("Макдоналдс", 1, "Макдоналдс"),
+    ("несуществующий_запрос", 0, None),
+])
+def test_simple_search_parametrized(sample_transactions, search_term, expected_count, expected_item):
+    """Параметризованный тест функции simple_search."""
+    result = simple_search(search_term, sample_transactions)
+    result_list = json.loads(result)
+    assert len(result_list) == expected_count
+    if expected_count > 0:
+        if expected_item in ["Пятерочка", "Макдоналдс"]:
+            assert result_list[0]["Описание"] == expected_item
+        elif expected_item == "Супермаркеты":
+            assert result_list[0]["Категория"] == expected_item
+
+
+@pytest.mark.parametrize("year,month,expected_categories", [
+    (2023, 1, ["Рестораны", "Супермаркеты", "Одежда и обувь"]),
+    (2022, 12, []),
+    (2023, 2, []),
+])
+def test_cashback_categories_parametrized(sample_transactions, year, month, expected_categories):
+    """Параметризованный тест функции анализа выгодных категорий для кешбэка."""
+    for transaction in sample_transactions:
+        if "Дата операции" in transaction:
+            date_str = transaction["Дата операции"]
+            if "-" in date_str:
+                date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+                transaction["Дата операции"] = date_obj.strftime("%d.%m.%Y %H:%M:%S")
+    result = cashback_categories(sample_transactions, year, month)
     result_dict = json.loads(result)
-    assert "Рестораны" in result_dict
-    assert "Супермаркеты" in result_dict
-    assert "Одежда и обувь" in result_dict
-    assert result_dict["Рестораны"] > 0
-    assert result_dict["Супермаркеты"] > 0
-    assert result_dict["Одежда и обувь"] > 0
+    if not expected_categories:
+        assert result_dict == {}
+    else:
+        for category in expected_categories:
+            assert category in result_dict
+            assert result_dict[category] > 0
 
 
 def test_investment_bank(sample_transactions):
@@ -172,14 +203,6 @@ def test_investment_bank(sample_transactions):
     assert isinstance(result, float)
     assert result > 0
     assert result == 38.0
-
-
-def test_simple_search(sample_transactions):
-    """Тест функции simple_search."""
-    result = simple_search("Пятерочка", sample_transactions)
-    result_list = json.loads(result)
-    assert len(result_list) > 0
-    assert result_list[0]["Описание"] == "Пятерочка"
 
 
 def test_search_phone_numbers(sample_transactions):
@@ -238,6 +261,12 @@ class TestServices(unittest.TestCase):
 
     def test_cashback_categories(self):
         """Тест функции cashback_categories."""
+        for transaction in self.test_transactions:
+            if "Дата операции" in transaction:
+                date_str = transaction["Дата операции"]
+                if "-" in date_str:
+                    date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+                    transaction["Дата операции"] = date_obj.strftime("%d.%m.%Y %H:%M:%S")
         result = cashback_categories(self.test_transactions, 2023, 1)
         result_dict = json.loads(result)
         self.assertIn("Рестораны", result_dict)

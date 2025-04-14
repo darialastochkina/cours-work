@@ -3,10 +3,7 @@
 import json
 import logging
 
-from src.utils import (
-    get_greeting, get_card_info, get_top_transactions,
-    get_currency_rates, get_stock_prices
-)
+from src.utils import get_card_info, get_currency_rates, get_greeting, get_stock_prices, get_top_transactions
 
 logging.basicConfig(
     level=logging.INFO,
@@ -33,7 +30,7 @@ def main_page(datetime_str: str) -> str:
             "stocks": stocks
         }
         logger.info("Main page data generated successfully")
-        return json.dumps(result, ensure_ascii=False)
+        return json.dumps(result, ensure_ascii=False, indent=4)
     except Exception as e:
         logger.error(f"Error generating main page data: {e}")
-        return json.dumps({"error": str(e)})
+        return json.dumps({"error": str(e)}, indent=4)

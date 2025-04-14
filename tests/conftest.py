@@ -1,7 +1,8 @@
 import warnings
-from urllib3.exceptions import NotOpenSSLWarning
-import pytest
+
 import pandas as pd
+import pytest
+from urllib3.exceptions import NotOpenSSLWarning
 
 warnings.filterwarnings("ignore", category=Warning, module="urllib3")
 warnings.filterwarnings("ignore", category=NotOpenSSLWarning)

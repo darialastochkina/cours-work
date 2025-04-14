@@ -1,10 +1,8 @@
-"""Вспомогательные функции для работы с данными."""
-
 import json
 import logging
 import os
 from datetime import datetime
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
 import pandas as pd
 import requests
@@ -61,60 +59,56 @@ def get_greeting(datetime_str: str) -> str:
 
 
 def get_card_info(datetime_str: str) -> List[Dict[str, Any]]:
-    """Получает информацию по картам. """
+    """Получает информацию по картам на основе транзакций за период."""
     try:
-        return [
-            {
-                "last_digits": "5814",
-                "total_spent": 1262.00,
-                "cashback": 12.62
-            },
-            {
-                "last_digits": "7512",
-                "total_spent": 7.94,
-                "cashback": 0.08
-            }
+        dt = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
+        start_date = datetime(dt.year, dt.month, 1)
+        transactions_df = load_transactions('data/Operations (1).xlsx')
+        transactions_df['Дата операции'] = pd.to_datetime(transactions_df['Дата операции'], format="%d.%m.%Y %H:%M:%S")
+        filtered_df = transactions_df[
+            (transactions_df['Дата операции'] >= start_date) &
+            (transactions_df['Дата операции'] <= dt)
         ]
+        card_stats = []
+        for card_num, card_df in filtered_df.groupby('Номер карты'):
+            if isinstance(card_num, str) and len(card_num) >= 4:
+                last_digits = card_num[-4:]
+                total_spent = card_df[card_df['Сумма платежа'] > 0]['Сумма платежа'].sum()
+                cashback = card_df['Кешбэк'].sum()
+                card_stats.append({
+                    "last_digits": last_digits,
+                    "total_spent": round(float(total_spent), 2),
+                    "cashback": round(float(cashback), 2)
+                })
+        logger.info(f"Card info generated successfully for {datetime_str}")
+        return card_stats
     except Exception as e:
         logger.error(f"Error getting card info: {e}")
         return []
 
 
 def get_top_transactions(datetime_str: str) -> List[Dict[str, Any]]:
-    """Получает топ-5 транзакций по сумме платежа."""
+    """Получает топ-5 транзакций по сумме платежа за период."""
     try:
-        return [
-            {
-                "date": "21.12.2021",
-                "amount": 1198.23,
-                "category": "Переводы",
-                "description": "Перевод Кредитная карта. ТП 10.2 RUR"
-            },
-            {
-                "date": "20.12.2021",
-                "amount": 829.00,
-                "category": "Супермаркеты",
-                "description": "Лента"
-            },
-            {
-                "date": "20.12.2021",
-                "amount": 421.00,
-                "category": "Различные товары",
-                "description": "Ozon.ru"
-            },
-            {
-                "date": "16.12.2021",
-                "amount": -14216.42,
-                "category": "ЖКХ",
-                "description": "ЖКУ Квартира"
-            },
-            {
-                "date": "16.12.2021",
-                "amount": 453.00,
-                "category": "Бонусы",
-                "description": "Кешбэк за обычные покупки"
-            }
+        dt = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
+        start_date = datetime(dt.year, dt.month, 1)
+        transactions_df = load_transactions('data/Operations (1).xlsx')
+        transactions_df['Дата операции'] = pd.to_datetime(transactions_df['Дата операции'], format="%d.%m.%Y %H:%M:%S")
+        filtered_df = transactions_df[
+            (transactions_df['Дата операции'] >= start_date) &
+            (transactions_df['Дата операции'] <= dt)
         ]
+        sorted_df = filtered_df.iloc[filtered_df['Сумма платежа'].abs().argsort()[::-1]]
+        top_transactions = []
+        for _, row in sorted_df.head(5).iterrows():
+            top_transactions.append({
+                "date": row['Дата операции'].strftime("%d.%m.%Y"),
+                "amount": float(row['Сумма платежа']),
+                "category": row['Категория'],
+                "description": row['Описание']
+            })
+        logger.info(f"Top transactions generated successfully for {datetime_str}")
+        return top_transactions
     except Exception as e:
         logger.error(f"Error getting top transactions: {e}")
         return []
@@ -138,16 +132,10 @@ def get_currency_rates(currencies: Optional[List[str]] = None) -> List[Dict[str,
             ]
         else:
             logger.error(f"Error getting currency rates: {response.status_code}")
-            return [
-                {"currency": "USD", "rate": 73.21},
-                {"currency": "EUR", "rate": 87.08}
-            ]
+            return []
     except Exception as e:
         logger.error(f"Error getting currency rates: {e}")
-        return [
-            {"currency": "USD", "rate": 73.21},
-            {"currency": "EUR", "rate": 87.08}
-        ]
+        return []
 
 
 def get_stock_prices(stocks: Optional[List[str]] = None) -> List[Dict[str, Any]]:
@@ -167,22 +155,10 @@ def get_stock_prices(stocks: Optional[List[str]] = None) -> List[Dict[str, Any]]
             ]
         else:
             logger.error(f"Error getting stock prices: {response.status_code}")
-            return [
-                {"stock": "AAPL", "price": 150.12},
-                {"stock": "AMZN", "price": 3173.18},
-                {"stock": "GOOGL", "price": 2742.39},
-                {"stock": "MSFT", "price": 296.71},
-                {"stock": "TSLA", "price": 1007.08}
-            ]
+            return []
     except Exception as e:
         logger.error(f"Error getting stock prices: {e}")
-        return [
-            {"stock": "AAPL", "price": 150.12},
-            {"stock": "AMZN", "price": 3173.18},
-            {"stock": "GOOGL", "price": 2742.39},
-            {"stock": "MSFT", "price": 296.71},
-            {"stock": "TSLA", "price": 1007.08}
-        ]
+        return []
 
 
 def format_date(date_str: str) -> str:

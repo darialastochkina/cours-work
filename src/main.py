@@ -3,10 +3,10 @@
 import argparse
 import logging
 
+from src.reports import spending_by_category
+from src.services import cashback_categories
 from src.utils import load_transactions
 from src.views import main_page
-from src.services import cashback_categories
-from src.reports import spending_by_category
 
 logging.basicConfig(
     level=logging.INFO,
