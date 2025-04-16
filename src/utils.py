@@ -63,7 +63,7 @@ def get_card_info(datetime_str: str) -> List[Dict[str, Any]]:
     try:
         dt = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
         start_date = datetime(dt.year, dt.month, 1)
-        transactions_df = load_transactions('data/Operations (1).xlsx')
+        transactions_df = load_transactions('../data/Operations (1).xlsx')
         transactions_df['Дата операции'] = pd.to_datetime(transactions_df['Дата операции'], format="%d.%m.%Y %H:%M:%S")
         filtered_df = transactions_df[
             (transactions_df['Дата операции'] >= start_date) &
@@ -74,7 +74,7 @@ def get_card_info(datetime_str: str) -> List[Dict[str, Any]]:
             if isinstance(card_num, str) and len(card_num) >= 4:
                 last_digits = card_num[-4:]
                 total_spent = card_df[card_df['Сумма платежа'] > 0]['Сумма платежа'].sum()
-                cashback = card_df['Кешбэк'].sum()
+                cashback = card_df['Кэшбэк'].sum()
                 card_stats.append({
                     "last_digits": last_digits,
                     "total_spent": round(float(total_spent), 2),
@@ -92,13 +92,13 @@ def get_top_transactions(datetime_str: str) -> List[Dict[str, Any]]:
     try:
         dt = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
         start_date = datetime(dt.year, dt.month, 1)
-        transactions_df = load_transactions('data/Operations (1).xlsx')
+        transactions_df = load_transactions('../data/Operations (1).xlsx')
         transactions_df['Дата операции'] = pd.to_datetime(transactions_df['Дата операции'], format="%d.%m.%Y %H:%M:%S")
         filtered_df = transactions_df[
             (transactions_df['Дата операции'] >= start_date) &
             (transactions_df['Дата операции'] <= dt)
         ]
-        sorted_df = filtered_df.iloc[filtered_df['Сумма платежа'].abs().argsort()[::-1]]
+        sorted_df = filtered_df.iloc[filtered_df['Сумма платежа'].argsort()[::-1]]
         top_transactions = []
         for _, row in sorted_df.head(5).iterrows():
             top_transactions.append({
